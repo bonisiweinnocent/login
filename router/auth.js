@@ -40,20 +40,8 @@ router.post('/signup', [
     let hashedPassword = await bcrypt.hash(password, 10);
 
     // *********
-    let user = users.find((user) => {
-        return user.email === email
-    });
-
-    users.push({
-        email,
-        password: hashedPassword
-    });
-
-
-    // let user = await db.oneOrMany(`select * from love_user where username = $1`, [email]);
-
-    // res.json({
-    // })
+    let user = await db.oneOrNone(`select * from love_user where username = $1`, [email]);
+console.log(user);
     const token = await jwt.sign({
         email
     }, "2b$10$sKJ0mzanWwudGhOers1HkOGH2XfZ19dU64fs1E8P6RX1QvpCK2jum", {
@@ -69,6 +57,8 @@ router.post('/signup', [
             ]
         })
     } else {
+
+        await db.none(`insert into love_user(username,password,love_count) values ($1,$2, 0)`, [email,hashedPassword]);
 
         res.json({
             "msg": "New user created!",
